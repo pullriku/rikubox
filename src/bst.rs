@@ -1,7 +1,7 @@
 use crate::r#box::MyBox;
 
 /// 二分探索木。
-/// 
+///
 /// # Examples
 /// ```rust
 /// use rikubox::bst::BinarySearchTree;
@@ -33,7 +33,7 @@ impl<T> BinarySearchTree<T> {
 
 impl<T: Ord> BinarySearchTree<T> {
     /// 値を挿入します。
-    /// 
+    ///
     /// # Examples
     /// ```rust
     /// use rikubox::bst::BinarySearchTree;
@@ -59,7 +59,7 @@ impl<T: Ord> BinarySearchTree<T> {
     }
 
     /// 値を検索します。`value`がツリーに含まれる場合は `true` を返します。
-    /// 
+    ///
     /// # Examples
     /// ```rust
     /// use rikubox::bst::BinarySearchTree;

@@ -1,9 +1,11 @@
 use std::{
-    alloc, fmt, mem, ops::{Deref, DerefMut}, ptr::NonNull
+    alloc, fmt, mem,
+    ops::{Deref, DerefMut},
+    ptr::NonNull,
 };
 
 /// ヒープ領域にある値を表すスマートポインタ。
-/// 
+///
 /// # Examples
 /// ```rust
 /// use rikubox::r#box::MyBox;
@@ -17,10 +19,9 @@ pub struct MyBox<T> {
 unsafe impl<T: Send> Send for MyBox<T> {}
 unsafe impl<T: Sync> Sync for MyBox<T> {}
 
-
 impl<T> MyBox<T> {
     /// 新しい `MyBox` を作成します。
-    /// 
+    ///
     /// # Examples
     /// ```rust
     /// use rikubox::r#box::MyBox;
@@ -34,9 +35,7 @@ impl<T> MyBox<T> {
             let inner: NonNull<T> = NonNull::dangling();
             // dropさせない
             unsafe { inner.as_ptr().write(value) };
-            return Self {
-                inner,
-            };
+            return Self { inner };
         }
 
         let ptr = unsafe { alloc::alloc(layout) }.cast::<T>();
