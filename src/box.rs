@@ -1,7 +1,5 @@
 use std::{
-    alloc, mem,
-    ops::{Deref, DerefMut},
-    ptr::NonNull,
+    alloc, fmt, mem, ops::{Deref, DerefMut}, ptr::NonNull
 };
 
 pub struct MyBox<T> {
@@ -11,6 +9,7 @@ pub struct MyBox<T> {
 unsafe impl<T: Send> Send for MyBox<T> {}
 unsafe impl<T: Sync> Sync for MyBox<T> {}
 
+
 impl<T> MyBox<T> {
     pub fn new(value: T) -> Self {
         let layout = alloc::Layout::new::<T>();
@@ -19,7 +18,9 @@ impl<T> MyBox<T> {
             let inner: NonNull<T> = NonNull::dangling();
             // dropさせない
             unsafe { inner.as_ptr().write(value) };
-            return Self { inner };
+            return Self {
+                inner,
+            };
         }
 
         let ptr = unsafe { alloc::alloc(layout) }.cast::<T>();
@@ -64,13 +65,21 @@ impl<T> DerefMut for MyBox<T> {
     }
 }
 
-const _: () = {
-    assert!(mem::size_of::<Option<MyBox<u8>>>() == mem::size_of::<Option<Box<u8>>>());
+impl<T: fmt::Debug> fmt::Debug for MyBox<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        (**self).fmt(f)
+    }
+}
 
+const _: () = {
+    assert!(mem::size_of::<Option<MyBox<u8>>>() == mem::size_of::<MyBox<u8>>());
     assert!(
-        mem::size_of::<Option<MyBox<[usize; 100]>>>()
-            == mem::size_of::<Option<Box<[usize; 100]>>>()
+        mem::size_of::<Option<std::boxed::Box<u8>>>()
+            == mem::size_of::<std::boxed::Box<u8>>()
     );
+
+    const fn assert_send_sync<T: Send + Sync>() {}
+    assert_send_sync::<MyBox<u64>>();
 };
 
 #[cfg(test)]

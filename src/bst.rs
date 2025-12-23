@@ -10,10 +10,13 @@ struct Node<T> {
     right: Option<MyBox<Node<T>>>,
 }
 
-impl<T: Ord> BinarySearchTree<T> {
+impl<T> BinarySearchTree<T> {
     pub fn new() -> Self {
         Self { root: None }
     }
+}
+
+impl<T: Ord> BinarySearchTree<T> {
 
     pub fn insert(&mut self, value: T) {
         let mut current_node = &mut self.root;
@@ -52,7 +55,7 @@ impl<T: Ord> BinarySearchTree<T> {
     }
 }
 
-impl<T: Ord> Default for BinarySearchTree<T> {
+impl<T> Default for BinarySearchTree<T> {
     fn default() -> Self {
         Self::new()
     }
