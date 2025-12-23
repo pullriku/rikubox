@@ -33,7 +33,6 @@ jobs:
       - name: Run Tests
         run: cargo test --verbose
 
-  # 🚀 第2部：ドキュメントのデプロイ（合格した時だけ！）
   deploy-docs:
     name: Deploy Docs
     needs: check-and-test 

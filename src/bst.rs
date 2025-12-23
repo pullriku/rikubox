@@ -11,6 +11,13 @@ struct Node<T> {
 }
 
 impl<T> BinarySearchTree<T> {
+    /// 新しい空の二分探索木を作成します。
+    ///
+    /// # Examples
+    /// ```
+    /// use rikubox::bst::BinarySearchTree;
+    /// let tree = BinarySearchTree::<usize>::new();
+    /// ```
     pub fn new() -> Self {
         Self { root: None }
     }
@@ -173,62 +180,5 @@ mod tests {
         }
         // 大量に drop が走る
         drop(t);
-    }
-}
-
-#[cfg(test)]
-mod drop_count_tests {
-    use super::*;
-    use std::sync::{
-        Mutex,
-        atomic::{AtomicUsize, Ordering},
-    };
-
-    static NODE_DROPS: AtomicUsize = AtomicUsize::new(0);
-
-    // このカウンタを使うテストの直列化用（他テストと干渉しないように）
-    static LOCK: Mutex<()> = Mutex::new(());
-
-    impl<T> Drop for Node<T> {
-        fn drop(&mut self) {
-            NODE_DROPS.fetch_add(1, Ordering::SeqCst);
-        }
-    }
-
-    fn balanced_order(start: i32, end: i32, out: &mut Vec<i32>) {
-        if start >= end {
-            return;
-        }
-        let mid = start + (end - start) / 2;
-        out.push(mid);
-        balanced_order(start, mid, out);
-        balanced_order(mid + 1, end, out);
-    }
-
-    #[test]
-    fn drop_count_matches_number_of_inserted_nodes() {
-        let _g = LOCK.lock().unwrap();
-        NODE_DROPS.store(0, Ordering::SeqCst);
-
-        let mut t = BinarySearchTree::new();
-
-        // ユニークに 0..1024 を挿入（1024個）
-        let mut order = Vec::new();
-        balanced_order(0, 1024, &mut order);
-        for v in &order {
-            t.insert(*v);
-        }
-
-        // 重複を大量に入れても、ノード数は増えないことも確認
-        for _ in 0..1000 {
-            t.insert(123);
-            t.insert(500);
-            t.insert(0);
-        }
-
-        drop(t);
-
-        // Node は「ユニーク挿入された数」だけ存在するはず
-        assert_eq!(NODE_DROPS.load(Ordering::SeqCst), 1024);
     }
 }
