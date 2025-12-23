@@ -1,0 +1,65 @@
+name: Rust CI & Docs
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-and-test:
+    name: Check & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Check Formatting
+        run: cargo fmt -- --check
+
+      - name: Cargo Check
+        run: cargo check --verbose
+
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Run Tests
+        run: cargo test --verbose
+
+  # 🚀 第2部：ドキュメントのデプロイ（合格した時だけ！）
+  deploy-docs:
+    name: Deploy Docs
+    needs: check-and-test 
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Documentation
+        run: cargo doc --no-deps
+
+      - name: Create index.html
+        run: echo "<meta http-equiv=refresh content=0;url=rikubox/index.html>" > target/doc/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'target/doc'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
