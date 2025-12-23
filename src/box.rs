@@ -2,6 +2,14 @@ use std::{
     alloc, fmt, mem, ops::{Deref, DerefMut}, ptr::NonNull
 };
 
+/// ヒープ領域にある値を表すスマートポインタ。
+/// 
+/// # Examples
+/// ```rust
+/// use rikubox::r#box::MyBox;
+/// let b = MyBox::new(10);
+/// assert_eq!(*b, 10);
+/// ```
 pub struct MyBox<T> {
     inner: NonNull<T>,
 }
@@ -11,6 +19,14 @@ unsafe impl<T: Sync> Sync for MyBox<T> {}
 
 
 impl<T> MyBox<T> {
+    /// 新しい `MyBox` を作成します。
+    /// 
+    /// # Examples
+    /// ```rust
+    /// use rikubox::r#box::MyBox;
+    /// let b = MyBox::new(10);
+    /// assert_eq!(*b, 10);
+    /// ```
     pub fn new(value: T) -> Self {
         let layout = alloc::Layout::new::<T>();
 

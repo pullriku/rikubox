@@ -1,5 +1,13 @@
 use crate::r#box::MyBox;
 
+/// 二分探索木。
+/// 
+/// # Examples
+/// ```rust
+/// use rikubox::bst::BinarySearchTree;
+/// let mut tree = BinarySearchTree::new();
+/// tree.insert(10);
+/// ```
 pub struct BinarySearchTree<T> {
     root: Option<MyBox<Node<T>>>,
 }
@@ -24,7 +32,14 @@ impl<T> BinarySearchTree<T> {
 }
 
 impl<T: Ord> BinarySearchTree<T> {
-
+    /// 値を挿入します。
+    /// 
+    /// # Examples
+    /// ```rust
+    /// use rikubox::bst::BinarySearchTree;
+    /// let mut tree = BinarySearchTree::new();
+    /// tree.insert(10);
+    /// ```
     pub fn insert(&mut self, value: T) {
         let mut current_node = &mut self.root;
 
@@ -43,6 +58,16 @@ impl<T: Ord> BinarySearchTree<T> {
         *current_node = Some(MyBox::new(Node::new(value)));
     }
 
+    /// 値を検索します。`value`がツリーに含まれる場合は `true` を返します。
+    /// 
+    /// # Examples
+    /// ```rust
+    /// use rikubox::bst::BinarySearchTree;
+    /// let mut tree = BinarySearchTree::new();
+    /// tree.insert(10);
+    /// assert!(tree.contains(&10));
+    /// assert!(!tree.contains(&11));
+    /// ```
     pub fn contains(&self, value: &T) -> bool {
         let mut current = &self.root;
 
