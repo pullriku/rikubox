@@ -1,5 +1,5 @@
 use std::{
-    alloc,
+    alloc, mem,
     ops::{Deref, DerefMut},
     ptr::NonNull,
 };
@@ -7,6 +7,10 @@ use std::{
 pub struct MyBox<T> {
     inner: NonNull<T>,
 }
+
+unsafe impl<T: Send> Send for MyBox<T> {}
+unsafe impl<T: Sync> Sync for MyBox<T> {}
+
 impl<T> MyBox<T> {
     pub fn new(value: T) -> Self {
         let layout = alloc::Layout::new::<T>();
@@ -60,6 +64,15 @@ impl<T> DerefMut for MyBox<T> {
     }
 }
 
+const _: () = {
+    assert!(mem::size_of::<Option<MyBox<u8>>>() == mem::size_of::<Option<Box<u8>>>());
+
+    assert!(
+        mem::size_of::<Option<MyBox<[usize; 100]>>>()
+            == mem::size_of::<Option<Box<[usize; 100]>>>()
+    );
+};
+
 #[cfg(test)]
 mod tests {
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -83,22 +96,6 @@ mod tests {
 
     #[test]
     fn drop_is_called_once_for_zst() {
-        static DROPS: AtomicUsize = AtomicUsize::new(0);
-
-        struct Z;
-        impl Drop for Z {
-            fn drop(&mut self) {
-                DROPS.fetch_add(1, Ordering::SeqCst);
-            }
-        }
-
-        drop(MyBox::new(Z));
-        assert_eq!(DROPS.load(Ordering::SeqCst), 1);
-    }
-
-    #[test]
-    fn zst_drop_is_called_once() {
-        use std::sync::atomic::{AtomicUsize, Ordering};
         static DROPS: AtomicUsize = AtomicUsize::new(0);
 
         struct Z;
@@ -139,5 +136,14 @@ mod tests {
         let rm: &mut String = &mut b;
         rm.push('!');
         assert_eq!(&*b, "hi!");
+    }
+
+    #[test]
+    fn zst_alignment_is_respected() {
+        #[repr(align(64))]
+        struct Z;
+        let b = MyBox::new(Z);
+        let addr = &*b as *const Z as usize;
+        assert_eq!(addr % 64, 0);
     }
 }
